@@ -1,7 +1,6 @@
 from load_data import load_dataset
 import pdb
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 train_data_x, test_data_x, train_output_y, test_output_y = load_dataset()
@@ -20,17 +19,33 @@ train_data_x = train_data_x.astype(float).reshape(train_data_x.shape[1],train_da
 test_data_x = test_data_x.astype(float).reshape(test_data_x.shape[1],test_data_x.shape[0])
 train_output_y = train_output_y.astype(float).reshape(train_output_y.shape[1],train_output_y.shape[0])
 test_output_y = test_output_y.astype(float).reshape(test_output_y.shape[1],test_output_y.shape[0])
+layer_dims = [4,5,4,3,2,1]
+
+
+def mini_batch_data(train_data_x,train_output_y,test_data_x,test_output_y):
+
+ batch_data = []
+
+
+
+
+
+
+
+ return train_data_x,train_output_y,test_data_x,test_output_y
+
+
+
 
 #initialize parameters
 
 
 
-layer_dims = [4,5,4,3,2,1]
 def initialize_parameters(layer_dims):
  parameters = {}
  for i in range(1,len(layer_dims)):
 
-  parameters["w" + str(i)] = (np.random.randn(layer_dims[i],layer_dims[i-1]))*(np.sqrt(2/layer_dims[i-1]))
+  parameters["w" + str(i)] = (np.random.randn(layer_dims[i],layer_dims[i-1]))*(np.sqrt(1/layer_dims[i]))
   parameters["b" + str(i)] = np.zeros(shape=(layer_dims[i],1))
 
  return parameters
@@ -57,11 +72,10 @@ def forward_propagation_sigmoid(w,b,a_prev):
 def back_propagation_sigmoid(da_prev,cache):
  linear_cache,activation_cache = cache
  w,a_prev,b,z = linear_cache
- m = a_prev.shape[1]
  s = 1 / (1 + np.exp(-activation_cache))
  dZ = da_prev * s * (1 - s)
- dw = (1./m)*np.dot(dZ, a_prev.T)
- db = (1./m)*np.sum(dZ, axis=1, keepdims=True)
+ dw = np.dot(dZ, a_prev.T)
+ db = np.sum(dZ, axis=1, keepdims=True)
  da = np.dot(w.T, dZ)
 
  return dw,db,da
@@ -69,11 +83,10 @@ def back_propagation_sigmoid(da_prev,cache):
 def back_propagation_relu(da_prev,cache):
  linear_cache,activation_cache = cache
  w,a_prev,b,z = linear_cache
- m = a_prev.shape[1]
  dZ = np.array(da_prev, copy=True)
  dZ[z <= 0] = 0
- dw = (1./m)*np.dot(dZ, a_prev.T)
- db = (1./m)*np.sum(dZ, axis=1, keepdims=True)
+ dw = np.dot(dZ, a_prev.T)
+ db = np.sum(dZ, axis=1, keepdims=True)
  da = np.dot(w.T, dZ)
 
  return dw,db,da
@@ -102,13 +115,12 @@ def model_forward(train_data,parameters):
  a_prev = train_data
  for i in range(1,5):
   w,b = parameters['w'+str(i)],parameters['b'+str(i)]
-  a_temp,cache = forward_propagation_relu(w,b,a_prev)
+  a_prev,cache = forward_propagation_relu(w,b,a_prev)
   caches.append(cache)
-  a_prev = a_temp
- al,cache = forward_propagation_sigmoid(parameters['w5'],parameters['b5'],a_prev)
+ a_prev,cache = forward_propagation_sigmoid(parameters['w5'],parameters['b5'],a_prev)
  caches.append(cache)
 
- return al,caches
+ return a_prev,caches
 
 def model_backward(al,y,caches):
  grads = {}
@@ -126,31 +138,25 @@ def compute_cost(al,y):
 
  return cost
 
-
 def model(train_data_x,train_output_y,learning_rate,num_iterations,layer_dims,print_cost=False):
  a_prev = train_data_x
  y = train_output_y
- costs = []
+ costs = [ ]
  parameters = initialize_parameters(layer_dims)
  for i in range(0, num_iterations):
-  al,caches = model_forward(train_data_x,parameters)
-  cost = compute_cost(al, y)
+  al,caches = model_forward(a_prev,parameters)
+  cost = compute_cost(al,y)
   grads = model_backward(al,y, caches)
   update_parameters(parameters,grads,learning_rate)
   if print_cost and i % 100 == 0:
       print("Cost after iteration %i: %f" % (i, cost))
   if print_cost and i % 100 == 0:
       costs.append(cost)
- plt.plot(np.squeeze(costs))
- plt.ylabel('cost')
- plt.xlabel('iterations (per tens)')
- plt.title("Learning rate =" + str(learning_rate))
-# plt.show()
 
  return parameters,grads
 
 
-parameters,grads = model(train_data_x,train_output_y,0.00075,30000,layer_dims,True)
+parameters,grads = model(train_data_x,train_output_y,0.001,20000,layer_dims,True)
 pred_test = predict(test_data_x, parameters)
 print(pred_test)
 print(test_output_y)

@@ -40,7 +40,7 @@ w5 = np.random.randn(1,2)*np.sqrt(2/1)
 b5 = np.zeros(shape=(1,1))
 
 
-for i in range(0, 1000):
+for i in range(0, 3000):
 
  for index in range(0, train_data_x.shape[0]):
   x1 = train_data_x[index].reshape((4, 1))
@@ -74,6 +74,7 @@ for i in range(0, 1000):
 
   dA5 = - (np.divide(Y, a5) - np.divide(1 - Y, 1 - a5))
   s = 1 / (1 + np.exp(-z5))
+
   dZ5 = dA5 * s * (1 - s)
   dW5 = np.dot(dZ5, a4.T)
   db5 = np.sum(dZ5, axis=1, keepdims=True)
@@ -100,7 +101,7 @@ for i in range(0, 1000):
 
   # update parameters
 
-  learning_rate = 0.001
+  learning_rate = 0.0001
   w5 = w5 - learning_rate * dW5
   b5 = b5 - learning_rate * db5
 
@@ -115,7 +116,6 @@ for i in range(0, 1000):
 
   w1 = w1 - learning_rate * dW1
   b1 = b1 - learning_rate * db1
-
 
 
 for index in range(0, test_data_x.shape[0]):
